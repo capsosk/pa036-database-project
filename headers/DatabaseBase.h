@@ -11,7 +11,7 @@ class DatabaseBase
 {
   public:
     //! @brief constructor
-    DatabaseBase(const std::string &name)
+    DatabaseBase(const std::string &name, const std::string &)
         : name(name){};
 
     //! @brief runs query on database
@@ -24,8 +24,5 @@ class DatabaseBase
     std::string name;
 
   private:
-    //! @brief Initializes the databse
-    virtual bool InitDatabase() = 0;
-
     bool _initialized = false;
 };

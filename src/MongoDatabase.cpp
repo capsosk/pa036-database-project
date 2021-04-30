@@ -4,17 +4,20 @@
 
 #include "../headers/MongoDatabase.h"
 
-MongoDatabase::MongoDatabase(const std::string &name)
-    : DatabaseBase(name)
-{
-}
+#include <iostream>
 
-bool MongoDatabase::InitDatabase()
+MongoDatabase::MongoDatabase(const std::string &name, const std::string &db_address)
+    : DatabaseBase(name, db_address)
 {
-    return false;
+    mongocxx::uri uri(db_address);
+    c = { uri };
+    if (!c) {
+        std::cerr << "Postgresql failed to init" << '\n';
+    }
 }
 
 bool MongoDatabase::RunQuery(const std::string &query)
 {
+    /** http://mongocxx.org/mongocxx-v3/tutorial/ **/
     return false;
 }

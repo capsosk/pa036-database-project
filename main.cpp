@@ -12,11 +12,15 @@ int main()
 {
     auto timer = ChronoWrapper();
     timer.startTimer();
-    MongoDatabase mongo = MongoDatabase(std::string("MongoDB"));
+    constexpr auto mongo_address = "postgresql://accounting@localhost/company";
+    constexpr auto pg_address = "mongodb://localhost:27017";
+
+    MongoDatabase mongo = MongoDatabase("MongoDB", mongo_address);
     std::cout << mongo.name << '\n';
 
-    PostgresqlDatabase postgresql = PostgresqlDatabase(std::string("PostgreSQLDB"));
+    PostgresqlDatabase postgresql = PostgresqlDatabase("PostgreSQLDB", pg_address);
     std::cout << postgresql.name << '\n';
+
     timer.endTimer();
     timer.displayResultOnCout();
     return 0;

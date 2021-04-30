@@ -6,14 +6,16 @@
 
 #include "DatabaseBase.h"
 
+#include <pqxx/pqxx>
+
 class PostgresqlDatabase : public DatabaseBase
 {
   public:
-    PostgresqlDatabase(const std::string &name);
+    PostgresqlDatabase(const std::string &name, const std::string &db_address);
     ~PostgresqlDatabase() override = default;
 
     bool RunQuery(const std::string &query) override;
 
   private:
-    bool InitDatabase() override;
+    pqxx::connection c;
 };
