@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "608eff8ce9b1502849e6feba",
+    "age": 39,
+    "eyeColor": "blue",
+    "name": "Joyner Williamson"
+  },
+  {
+    "_id": "608eff8cc9d3041f05a6e5ab",
+    "age": 22,
+    "eyeColor": "green",
+    "name": "Neva Mathews"
+  },
+  {
+    "_id": "608eff8c298b3f9b64650119",
+    "age": 29,
+    "eyeColor": "green",
+    "name": "Genevieve Ayala"
+  },
+  {
+    "_id": "608eff8ce2e0dd5787b8c853",
+    "age": 30,
+    "eyeColor": "green",
+    "name": "Wanda Shaw"
+  },
+  {
+    "_id": "608eff8cb1c1a9f72060d68d",
+    "age": 26,
+    "eyeColor": "blue",
+    "name": "Casey Mejia"
+  }
+]

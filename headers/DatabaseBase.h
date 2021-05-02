@@ -5,6 +5,9 @@
 #pragma once
 
 #include <string>
+#include <vector>
+
+using jsonObjects = std::vector<std::string>;
 
 //! @brief Base class for both databases
 class DatabaseBase

@@ -34,8 +34,10 @@ class MongoDatabase : public DatabaseBase
     std::string GetName() override;
 
     bool RunQuery(const std::string &query) override;
+    bool AddMultipleObjects(const std::vector<std::string> &vector);
 
   private:
     [[maybe_unused]] const mongocxx::instance instance{};
-    mongocxx::client c;
+    mongocxx::client _client;
+    mongocxx::database _database;
 };

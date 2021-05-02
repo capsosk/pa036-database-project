@@ -9,23 +9,27 @@
 #include "headers/MongoDatabase.h"
 #include "headers/PostgresqlDatabase.h"
 
+
 int main(int /*argc*/, const char** argv)
 {
     auto timer = ChronoWrapper();
     timer.startTimer();
-    constexpr auto mongo_address = "postgresql://accounting@localhost/company";
-    constexpr auto pg_address = "mongodb://localhost:27017";
+    constexpr auto mongo_address = "mongodb://localhost:27017";
+    constexpr auto pg_address = "postgresql://accounting@localhost/company";
 
-    MongoDatabase mongo = MongoDatabase(mongo_address);
+    auto mongo = MongoDatabase(mongo_address);
     std::cout << mongo.GetName() << '\n';
 
-    PostgresqlDatabase postgresql = PostgresqlDatabase(pg_address);
-    std::cout << postgresql.GetName() << '\n';
+    /*auto postgresql = PostgresqlDatabase(pg_address);
+    std::cout << postgresql.GetName() << '\n';*/
 
-    FileParser parser {argv[1]};
-    for (std::string line; parser.returnOneLine(line); ) {
-        std::cout << line << '\n';
-    }
+    auto parser = FileParser(argv[1]);
+
+    //! examples https://github.com/mongodb/mongo-cxx-driver/blob/master/examples/mongocxx/query.cpp
+
+    const auto objects = parser.returnJsonObjects();
+
+    mongo.AddMultipleObjects(objects);
 
     timer.endTimer();
     timer.displayResultOnCout();
