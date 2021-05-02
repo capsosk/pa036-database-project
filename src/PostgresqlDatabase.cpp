@@ -6,8 +6,8 @@
 
 #include <iostream>
 
-PostgresqlDatabase::PostgresqlDatabase(const std::string &name, const std::string &db_address)
-    : DatabaseBase(name, db_address), c(db_address)
+PostgresqlDatabase::PostgresqlDatabase(const std::string &db_address)
+    : DatabaseBase(db_address), c(db_address)
 {
     if (!c.is_open()) {
         std::cerr << "PostgreSQL Initialization failed!" << '\n';
@@ -17,6 +17,12 @@ PostgresqlDatabase::PostgresqlDatabase(const std::string &name, const std::strin
 bool PostgresqlDatabase::RunQuery(const std::string &query)
 {
     pqxx::work txn{ c };
-    /** do stuff with txn http://pqxx.org/development/libpqxx/#quick-example **/
-    return false;
+    txn.exec(query);
+    txn.commit();
+    return true;
+}
+
+std::string PostgresqlDatabase::GetName()
+{
+    return "PostgreSQL";
 }

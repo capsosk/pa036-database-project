@@ -28,12 +28,14 @@ using bsoncxx::builder::stream::open_document;
 class MongoDatabase : public DatabaseBase
 {
   public:
-    MongoDatabase(const std::string &name, const std::string &db_address);
+    MongoDatabase(const std::string &db_address);
     ~MongoDatabase() override = default;
+
+    std::string GetName() override;
 
     bool RunQuery(const std::string &query) override;
 
   private:
-    const mongocxx::instance instance{};
+    [[maybe_unused]] const mongocxx::instance instance{};
     mongocxx::client c;
 };

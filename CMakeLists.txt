@@ -10,13 +10,15 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
     add_definitions("-D_CRT_SECURE_NO_WARNINGS")
 endif()
 
-set(SOURCES main.cpp src/ChronoWrapper.cpp src/MongoDatabase.cpp src/PostgresqlDatabase.cpp)
+set(SOURCES main.cpp src/ChronoWrapper.cpp src/MongoDatabase.cpp src/PostgresqlDatabase.cpp src/FileParser.cpp)
 
 include_directories("/usr/local/lib/include/mongocxx/v_noabi")
 include_directories("/usr/local/lib/include/bsoncxx/v_noabi")
 
 add_executable(db_project ${SOURCES})
+
 set(PQ_LIBS pqxx pq)
-SET(MONGO_LIBS mongoc-1.0 mongocxx-static)
-SET(BSON_LIBS bson-static-1.0 bsoncxx-static)
+set(MONGO_LIBS mongoc-1.0 mongocxx-static)
+set(BSON_LIBS bson-static-1.0 bsoncxx-static)
+
 target_link_libraries(db_project ${PQ_LIBS} ${MONGO_LIBS} ${BSON_LIBS} )

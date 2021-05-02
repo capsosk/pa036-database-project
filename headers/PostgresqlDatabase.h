@@ -11,8 +11,10 @@
 class PostgresqlDatabase : public DatabaseBase
 {
   public:
-    PostgresqlDatabase(const std::string &name, const std::string &db_address);
+    PostgresqlDatabase(const std::string &db_address);
     ~PostgresqlDatabase() override = default;
+
+    std::string GetName() override;
 
     bool RunQuery(const std::string &query) override;
 
