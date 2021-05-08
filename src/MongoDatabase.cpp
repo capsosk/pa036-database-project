@@ -21,12 +21,21 @@ std::string MongoDatabase::GetName()
 {
     return "MongoDB";
 }
-bool MongoDatabase::UpdateOne(const std::string &toUpdate)
+
+bool MongoDatabase::UpdateMany(const bsoncxx::document::value &toUpdate, const bsoncxx::document::value &setTo)
 {
+    auto collection = _database[kTableName];
+    collection.update_many({ toUpdate }, { setTo });
 }
 
-bool MongoDatabase::UpdateMany(const std::vector<std::string> &toUpdate)
+void MongoDatabase::Aggregate(const bsoncxx::document::value &matchValue, const bsoncxx::document::value &groupValue)
 {
+    mongocxx::pipeline stages;
+    stages.match({ matchValue }).group({ groupValue });
+    auto collection = _database[kTableName];
+    auto cursor = collection.aggregate(stages);
+    std::cout << "\nPrinting Aggregate: \n";
+    PrintCursor(cursor);
 }
 
 void MongoDatabase::AddMultipleObjects(const jsonObjects &vector)
@@ -92,6 +101,7 @@ void MongoDatabase::FindMany(const bsoncxx::document::value &toFind)
 {
     auto collection = _database[kTableName];
     mongocxx::cursor cursor = collection.find({ toFind });
+    std::cout << "\nPrinting FindMany: \n";
     PrintCursor(cursor);
     std::cout << '\n';
 }

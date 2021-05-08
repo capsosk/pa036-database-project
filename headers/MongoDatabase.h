@@ -40,9 +40,9 @@ class MongoDatabase : public DatabaseBase
 
     void AddOneObject(const std::string &query) override;
     void AddMultipleObjects(const std::vector<std::string> &vector) override;
-    bool UpdateMany(const std::vector<std::string> &toUpdate);
-    bool UpdateOne(const std::string &toUpdate);
+    bool UpdateMany(const bsoncxx::document::value &toUpdate, const bsoncxx::document::value &setTo);
     void FindMany(const bsoncxx::document::value &toFind);
+    void Aggregate(const bsoncxx::document::value &matchValue, const bsoncxx::document::value &groupValue);
 
     void CreateIndexes(const bsoncxx::document::value &indexes);
     void ClearDatabase() override;
