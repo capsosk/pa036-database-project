@@ -47,7 +47,7 @@ void MongoDatabase::AddMultipleObjects(const jsonObjects &vector)
                                                          << close_document << finalize);
 
     //! print it out as json
-    for (auto doc : cursor) {
+    for (const auto &doc : cursor) {
         std::cout << bsoncxx::to_json(doc) << "\n";
     }
 
@@ -81,19 +81,27 @@ void MongoDatabase::ClearDatabase()
     [[maybe_unused]] auto deleteResult = collection.delete_many({});
 }
 
-void MongoDatabase::CreateIndexes(const ParamValue<int> &indexes)
+void MongoDatabase::CreateIndexes(const bsoncxx::document::value &indexes)
 {
     auto collection = _database[kTableName];
-    for (const auto &index : indexes) {
-        collection.create_index(make_document(kvp(index.first, index.second)));
-    }
+
+    collection.create_index({ indexes });
 }
 
-void MongoDatabase::FindMany(const std::string &toFind)
+void MongoDatabase::FindMany(const bsoncxx::document::value &toFind)
 {
     auto collection = _database[kTableName];
+    mongocxx::cursor cursor = collection.find({ toFind });
+    PrintCursor(cursor);
+    std::cout << '\n';
+}
 
-    //! find every such as 10 < age <= 39
-    mongocxx::cursor cursor = collection.find(document{} << "age" << open_document << "$gt" << 0 << "$lte" << 20
-                                                         << close_document << finalize);
+void MongoDatabase::PrintCursor(mongocxx::cursor &cursor) const
+{
+    uint size = 0;
+    for (const auto &doc : cursor) {
+        size++;
+        std::cout << bsoncxx::to_json(doc) << "\n";
+    }
+    std::cout << "\nTotal Printed: " << size << '\n';
 }

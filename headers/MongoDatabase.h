@@ -33,9 +33,6 @@ constexpr auto kDbName = "mydb";
 class MongoDatabase : public DatabaseBase
 {
   public:
-    template <typename T>
-    using ParamValue = std::vector<std::pair<std::string, T>>;
-
     MongoDatabase(const std::string &db_address);
     ~MongoDatabase() override = default;
 
@@ -45,12 +42,14 @@ class MongoDatabase : public DatabaseBase
     void AddMultipleObjects(const std::vector<std::string> &vector) override;
     bool UpdateMany(const std::vector<std::string> &toUpdate);
     bool UpdateOne(const std::string &toUpdate);
-    void FindMany(const std::string &toFind);
+    void FindMany(const bsoncxx::document::value &toFind);
 
-    void CreateIndexes(const ParamValue<int> &indexes);
+    void CreateIndexes(const bsoncxx::document::value &indexes);
     void ClearDatabase() override;
 
   private:
+    void PrintCursor(mongocxx::cursor &cursor) const;
+
     [[maybe_unused]] const mongocxx::instance instance{};
     mongocxx::client _client;
     mongocxx::database _database;

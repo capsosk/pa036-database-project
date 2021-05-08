@@ -32,10 +32,15 @@ int main()
 
     mongo.AddMultipleObjects(objects);
 
-    MongoDatabase::ParamValue<int> indexes;
-    indexes.push_back({ "birthdate", 1 });
-    indexes.push_back({ "job.salary", 1 });
+    auto indexes = make_document(kvp("birthdate", 1), kvp("job.salary", 1));
     mongo.CreateIndexes(indexes);
+
+    auto filter = document{} << "birthdate" << open_document << "$gt"
+                             << "1970-01-01T00:00:00.000Z"
+                             << "$lte"
+                             << "1980-01-01T00:00:00.000Z"
+                             << close_document << finalize;
+    mongo.FindMany(filter);
 
     //postgresql.AddMultipleObjects(objects);
 
