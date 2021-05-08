@@ -5,6 +5,7 @@
 #pragma once
 
 #include <chrono>
+#include <ostream>
 
 class ChronoWrapper
 {
@@ -15,7 +16,7 @@ class ChronoWrapper
 
     void endTimer();
 
-    void displayResultOnCout();
+    void displayResultOnStream(std::ostream &out);
 
   private:
     std::chrono::system_clock::time_point dateStart;

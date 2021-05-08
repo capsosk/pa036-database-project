@@ -16,7 +16,9 @@ class PostgresqlDatabase : public DatabaseBase
 
     std::string GetName() override;
 
-    bool RunQuery(const std::string &query) override;
+    void AddOneObject(const std::string &query) override;
+    void AddMultipleObjects(const std::vector<std::string> &vector) override;
+    void ClearDatabase() override;
 
   private:
     pqxx::connection c;

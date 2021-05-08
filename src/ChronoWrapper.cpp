@@ -9,11 +9,12 @@
 #include <cassert>
 #include <iostream>
 
-void ChronoWrapper::displayResultOnCout()
+void ChronoWrapper::displayResultOnStream(std::ostream &out)
 {
-    std::cout << "Benchmark took : "
-              << std::chrono::duration_cast<std::chrono::microseconds>(dateEnd - dateStart).count()
-              << " microseconds";
+    out << "Benchmark took : "
+        << std::chrono::duration_cast<std::chrono::microseconds>(dateEnd - dateStart).count()
+        << " microseconds"
+        << "\n";
 }
 
 void ChronoWrapper::endTimer()

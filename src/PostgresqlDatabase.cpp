@@ -14,15 +14,35 @@ PostgresqlDatabase::PostgresqlDatabase(const std::string &db_address)
     }
 }
 
-bool PostgresqlDatabase::RunQuery(const std::string &query)
+void PostgresqlDatabase::AddOneObject(const std::string &query)
 {
     pqxx::work txn{ c };
     txn.exec(query);
     txn.commit();
-    return true;
 }
 
 std::string PostgresqlDatabase::GetName()
 {
     return "PostgreSQL";
+}
+
+void PostgresqlDatabase::ClearDatabase()
+{
+    static const std::string clearQuery = "DROP OWNED BY testuser";
+    pqxx::work txn{ c };
+    txn.exec(clearQuery);
+    txn.commit();
+}
+
+void PostgresqlDatabase::AddMultipleObjects(const std::vector<std::string> &objects)
+{
+    std::string begin = "INSERT INTO table VALUES";
+    std::string core;
+    for (auto &item : objects) {
+        core.append(std::to_string('(') + item + "),");
+    }
+    core.append(";");
+    pqxx::work txn{ c };
+    txn.exec(begin + core);
+    txn.commit();
 }

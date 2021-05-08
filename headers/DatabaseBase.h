@@ -19,7 +19,12 @@ class DatabaseBase
     //! @brief runs query on database
     //! @param query: query to run
     //! @precondition: must be initialized
-    virtual bool RunQuery(const std::string &query) = 0;
+    virtual void AddOneObject(const std::string &query) = 0;
+
+    virtual void AddMultipleObjects(const std::vector<std::string> &vector) = 0;
+
+    //! Clear all entries
+    virtual void ClearDatabase() = 0;
 
     //! @brief return Database name
     virtual std::string GetName() = 0;

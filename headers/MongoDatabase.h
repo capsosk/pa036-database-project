@@ -18,6 +18,8 @@
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/stream/array.hpp>
 
+using bsoncxx::builder::basic::kvp;
+using bsoncxx::builder::basic::make_document;
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::close_document;
 using bsoncxx::builder::stream::document;
@@ -25,16 +27,28 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::open_document;
 
+constexpr auto kTableName = "test";
+constexpr auto kDbName = "mydb";
+
 class MongoDatabase : public DatabaseBase
 {
   public:
+    template <typename T>
+    using ParamValue = std::vector<std::pair<std::string, T>>;
+
     MongoDatabase(const std::string &db_address);
     ~MongoDatabase() override = default;
 
     std::string GetName() override;
 
-    bool RunQuery(const std::string &query) override;
-    bool AddMultipleObjects(const std::vector<std::string> &vector);
+    void AddOneObject(const std::string &query) override;
+    void AddMultipleObjects(const std::vector<std::string> &vector) override;
+    bool UpdateMany(const std::vector<std::string> &toUpdate);
+    bool UpdateOne(const std::string &toUpdate);
+    void FindMany(const std::string &toFind);
+
+    void CreateIndexes(const ParamValue<int> &indexes);
+    void ClearDatabase() override;
 
   private:
     [[maybe_unused]] const mongocxx::instance instance{};
