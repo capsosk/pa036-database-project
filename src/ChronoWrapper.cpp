@@ -11,10 +11,7 @@
 
 void ChronoWrapper::displayResultOnStream(std::ostream &out)
 {
-    out << "Benchmark took : "
-        << std::chrono::duration_cast<std::chrono::microseconds>(dateEnd - dateStart).count()
-        << " microseconds"
-        << "\n";
+    out << std::chrono::duration_cast<std::chrono::microseconds>(dateEnd - dateStart).count() << "\n";
 }
 
 void ChronoWrapper::endTimer()

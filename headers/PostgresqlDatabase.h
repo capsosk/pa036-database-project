@@ -4,21 +4,21 @@
 
 #pragma once
 
-#include "DatabaseBase.h"
-
 #include <pqxx/pqxx>
+#include "FileParser.h"
 
-class PostgresqlDatabase : public DatabaseBase
+class PostgresqlDatabase
 {
   public:
     PostgresqlDatabase(const std::string &db_address);
-    ~PostgresqlDatabase() override = default;
 
-    std::string GetName() override;
+    std::string GetName();
 
-    void AddOneObject(const std::string &query) override;
-    void AddMultipleObjects(const std::vector<std::string> &vector) override;
-    void ClearDatabase() override;
+    void RunQuery(const std::string &query);
+    void AddMultipleObjectsJsonb(const FileParser::jsonObjects &objects);
+    void AddMultipleObjectsJson(const FileParser::jsonObjects &objects);
+    void AddMultipleObjectsScheme(const FileParser::jsonObjects &objects);
+    void ClearDatabase();
 
   private:
     pqxx::connection c;

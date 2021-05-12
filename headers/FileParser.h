@@ -9,15 +9,20 @@
 #include <string>
 #include <vector>
 
-#include "DatabaseBase.h"
+#include "JsonData.h"
 
 class FileParser
 {
   public:
-    FileParser(const char *file);
+    using JsonSchemeData = std::vector<Person>;
+    using jsonObjects = std::vector<std::string>;
+
+    FileParser(const std::string &);
     [[nodiscard]] bool returnOneLine(std::string &line);
     void returnWholeFile(std::string &file);
-    jsonObjects returnJsonObjects();
+
+    [[nodiscard]] jsonObjects returnJsonObjects();
+    [[nodiscard]] JsonSchemeData returnJsonSchemeObjects();
 
   private:
     std::ifstream _fileStream;

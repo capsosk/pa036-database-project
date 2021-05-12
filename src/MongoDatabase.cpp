@@ -5,9 +5,9 @@
 #include "../headers/MongoDatabase.h"
 
 #include <iostream>
+#include "../headers/ChronoWrapper.h"
 
 MongoDatabase::MongoDatabase(const std::string &db_address)
-    : DatabaseBase(db_address)
 {
     mongocxx::uri uri(db_address);
     _client = { uri };
@@ -15,6 +15,7 @@ MongoDatabase::MongoDatabase(const std::string &db_address)
         std::cerr << "Postgresql failed to init" << '\n';
     }
     _database = _client[kDbName];
+    collection = _database[kTableName];
 }
 
 std::string MongoDatabase::GetName()
@@ -22,91 +23,61 @@ std::string MongoDatabase::GetName()
     return "MongoDB";
 }
 
-bool MongoDatabase::UpdateMany(const bsoncxx::document::value &toUpdate, const bsoncxx::document::value &setTo)
+void MongoDatabase::UpdateMany(const bsoncxx::document::value &toUpdate, const bsoncxx::document::value &setTo)
 {
-    auto collection = _database[kTableName];
+    std::fstream stream("update10000index", std::ios_base::app);
+    auto chrono = ChronoWrapper();
+    chrono.startTimer();
     collection.update_many({ toUpdate }, { setTo });
+    chrono.endTimer();
+    chrono.displayResultOnStream(stream);
+    stream.flush();
 }
 
 void MongoDatabase::Aggregate(const bsoncxx::document::value &matchValue, const bsoncxx::document::value &groupValue)
 {
     mongocxx::pipeline stages;
     stages.match({ matchValue }).group({ groupValue });
-    auto collection = _database[kTableName];
     auto cursor = collection.aggregate(stages);
-    std::cout << "\nPrinting Aggregate: \n";
-    PrintCursor(cursor);
+    //    std::cout << "\nPrinting Aggregate: \n";
+    //    PrintCursor(cursor);
 }
 
-void MongoDatabase::AddMultipleObjects(const jsonObjects &vector)
+void MongoDatabase::AddMultipleObjects(const FileParser::jsonObjects &vector)
 {
     std::vector<bsoncxx::document::value> documents;
-
     //! convert to BSON
     for (const auto &jsonItem : vector) {
         auto bsonValue = bsoncxx::from_json(jsonItem);
         documents.push_back(bsonValue);
     }
-
-    auto collection = _database[kTableName];
     auto result = collection.insert_many(documents);
-
-    //! find every such as 10 < age <= 39
-    mongocxx::cursor cursor = collection.find(document{} << "age" << open_document << "$gt" << 0 << "$lte" << 20
-                                                         << close_document << finalize);
-
-    //! print it out as json
-    for (const auto &doc : cursor) {
-        std::cout << bsoncxx::to_json(doc) << "\n";
-    }
-
-    //! cleanup db
-    //    auto deleteResult =
-    //            collection.delete_many({});
-}
-
-void MongoDatabase::AddOneObject(const std::string &query)
-{
-    //! changes query for one json object and insert it
-    auto value = bsoncxx::from_json(query);
-    std::vector<bsoncxx::document::value> documents;
-    documents.push_back(value);
-
-    auto collection = _database[kTableName];
-    auto result = collection.insert_many(documents);
-
-    //! prints out single found value
-    auto foundValue = collection.find_one({});
-    std::cout << bsoncxx::to_json(foundValue->view()) << "\n";
-
-    //! cleanup the db
-    //    auto deleteResult =
-    //            collection.delete_many({});
 }
 
 void MongoDatabase::ClearDatabase()
 {
-    auto collection = _database[kTableName];
-    [[maybe_unused]] auto deleteResult = collection.delete_many({});
+    collection.delete_many({});
+}
+
+void MongoDatabase::DropDatabase()
+{
+    collection.drop();
 }
 
 void MongoDatabase::CreateIndexes(const bsoncxx::document::value &indexes)
 {
-    auto collection = _database[kTableName];
-
     collection.create_index({ indexes });
 }
 
 void MongoDatabase::FindMany(const bsoncxx::document::value &toFind)
 {
-    auto collection = _database[kTableName];
     mongocxx::cursor cursor = collection.find({ toFind });
-    std::cout << "\nPrinting FindMany: \n";
-    PrintCursor(cursor);
-    std::cout << '\n';
+    //    std::cout << "\nPrinting FindMany: \n";
+    //    PrintCursor(cursor);
+    //    std::cout << '\n';
 }
 
-void MongoDatabase::PrintCursor(mongocxx::cursor &cursor) const
+void MongoDatabase::PrintCursor(mongocxx::cursor &cursor)
 {
     uint size = 0;
     for (const auto &doc : cursor) {

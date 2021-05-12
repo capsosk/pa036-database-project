@@ -3,18 +3,19 @@
 //
 
 #include "../headers/PostgresqlDatabase.h"
+#include "../PostgresQueries.h"
 
 #include <iostream>
 
 PostgresqlDatabase::PostgresqlDatabase(const std::string &db_address)
-    : DatabaseBase(db_address), c(db_address)
+    : c(db_address)
 {
     if (!c.is_open()) {
         std::cerr << "PostgreSQL Initialization failed!" << '\n';
     }
 }
 
-void PostgresqlDatabase::AddOneObject(const std::string &query)
+void PostgresqlDatabase::RunQuery(const std::string &query)
 {
     pqxx::work txn{ c };
     txn.exec(query);
@@ -34,15 +35,39 @@ void PostgresqlDatabase::ClearDatabase()
     txn.commit();
 }
 
-void PostgresqlDatabase::AddMultipleObjects(const std::vector<std::string> &objects)
+void PostgresqlDatabase::AddMultipleObjectsJsonb(const std::vector<std::string> &objects)
 {
-    std::string begin = "INSERT INTO table VALUES";
+    std::string begin = "INSERT INTO person_jsonb VALUES";
     std::string core;
     for (auto &item : objects) {
-        core.append(std::to_string('(') + item + "),");
+        core.append("(\'" + item + "\'::jsonb),");
     }
+    core.pop_back();
     core.append(";");
     pqxx::work txn{ c };
     txn.exec(begin + core);
     txn.commit();
+}
+
+void PostgresqlDatabase::AddMultipleObjectsJson(const FileParser::jsonObjects &objects)
+{
+    std::string begin = "INSERT INTO person_json VALUES";
+    std::string core;
+    for (auto &item : objects) {
+        core.append("(\'" + item + "\'),");
+    }
+    core.pop_back();
+    core.append(";");
+    pqxx::work txn{ c };
+    txn.exec(begin + core);
+    txn.commit();
+}
+
+void PostgresqlDatabase::AddMultipleObjectsScheme(const FileParser::jsonObjects &objects)
+{
+    for (const auto &person : objects) {
+        /** this might be problematic, we are running query for each object,
+         ** as we couldnt figure out how to add more at once **/
+        RunQuery(person);
+    }
 }
