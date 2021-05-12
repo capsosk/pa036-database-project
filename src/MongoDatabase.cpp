@@ -25,13 +25,7 @@ std::string MongoDatabase::GetName()
 
 void MongoDatabase::UpdateMany(const bsoncxx::document::value &toUpdate, const bsoncxx::document::value &setTo)
 {
-    std::fstream stream("update10000index", std::ios_base::app);
-    auto chrono = ChronoWrapper();
-    chrono.startTimer();
     collection.update_many({ toUpdate }, { setTo });
-    chrono.endTimer();
-    chrono.displayResultOnStream(stream);
-    stream.flush();
 }
 
 void MongoDatabase::Aggregate(const bsoncxx::document::value &matchValue, const bsoncxx::document::value &groupValue)

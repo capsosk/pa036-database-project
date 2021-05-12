@@ -24,6 +24,8 @@ enum class IndexType
     NO_INDEX
 };
 
+//! PostgreSQL benchmark setup
+//! we were using files with names "10000.json" and "1000000.json"
 constexpr auto kCurrentFileSize = "10000";
 constexpr IndexType indexType = IndexType::INDEX;
 constexpr PostgresType postgresType = PostgresType::SCHEMA;
@@ -254,7 +256,8 @@ void MongoBenchmark()
     constexpr auto mongo_address = "mongodb://localhost:27017";
     auto mongo = MongoDatabase(mongo_address);
 
-    constexpr auto kCurrentFile = "10000";
+    constexpr auto kCurrentFile = "1000000";
+    const std::string kIndex = "";
     const std::string kFileName = std::string("../") + kCurrentFile + ".json";
 
     auto parser = FileParser(kFileName);
@@ -262,91 +265,101 @@ void MongoBenchmark()
     mongo.DropDatabase();
 
     auto indexes = make_document(kvp("birthdate", 1), kvp("job.salary", 1));
-    mongo.CreateIndexes(indexes);
-
-    std::fstream out("MongoAggregate10000Index", std::ios_base::app);
 
     auto timer = ChronoWrapper();
 
     int i;
 
-    //    //! add Benchmark
-    //    out << "\nMongo Add with Index\n";
-    //    i = 0;
-    //    while (i != 10) {
-    //        i++;
-    //        timer.startTimer();
-    //        mongo.AddMultipleObjectsScheme(objects);
-    //        timer.endTimer();
-    //        mongo.ClearDatabase();
-    //        timer.displayResultOnStream(out);
-    //    }
+    //! Insert Benchmark
+    i = 0;
+    while (i != 10) {
+        std::fstream out(std::string("MongoInsert") + kCurrentFile + kIndex, std::ios_base::app);
+        i++;
+        timer.startTimer();
+        if (!kIndex.empty())
+            mongo.CreateIndexes(indexes);
+        mongo.AddMultipleObjects(objects);
+        timer.endTimer();
+        mongo.ClearDatabase();
+        timer.displayResultOnStream(out);
+    }
 
-    //    //! select Benchmark Outer
-    //    auto filter = document{} << "birthdate" << open_document
-    //                             << "$gt"
-    //                             << "1970-01-01T00:00:00.000Z"
-    //                             << "$lte"
-    //                             << "1980-01-01T00:00:00.000Z"
-    //                             << close_document << finalize;
-    //    i = 0;
-    //    mongo.AddMultipleObjectsScheme(objects);
-    //    out << "\nMongo Select Outer\n";
-    //    while (i != 10) {
-    //        i++;
-    //        timer.startTimer();
-    //        mongo.FindMany(filter);
-    //        timer.endTimer();
-    //        timer.displayResultOnStream(out);
-    //    }
+    //! select Benchmark Outer
+    auto filterOuter = document{} << "birthdate" << open_document
+                                  << "$gt"
+                                  << "1970-01-01T00:00:00.000Z"
+                                  << "$lte"
+                                  << "1980-01-01T00:00:00.000Z"
+                                  << close_document << finalize;
+    i = 0;
+    while (i != 10) {
+        std::fstream out(std::string("MongoSelectOuter") + kCurrentFile + kIndex, std::ios_base::app);
+        i++;
+        if (!kIndex.empty())
+            mongo.CreateIndexes(indexes);
+        mongo.AddMultipleObjects(objects);
+        timer.startTimer();
+        mongo.FindMany(filterOuter);
+        timer.endTimer();
+        timer.displayResultOnStream(out);
+        mongo.ClearDatabase();
+    }
 
-    //    //! select Benchmark Inner
-    //    auto filter = make_document(kvp("job.salary", make_document(kvp("$lt", 1000))));
-    //    i = 0;
-    //    mongo.AddMultipleObjectsScheme(objects);
-    //    out << "\nMongo Select Inner\n";
-    //    while (i != 10) {
-    //        i++;
-    //        timer.startTimer();
-    //        mongo.FindMany(filter);
-    //        timer.endTimer();
-    //        timer.displayResultOnStream(out);
-    //    }
+    //! select Benchmark Inner
+    auto filterInner = make_document(kvp("job.salary", make_document(kvp("$lt", 1000))));
+    i = 0;
+    while (i != 10) {
+        std::fstream out(std::string("MongoSelectInner") + kCurrentFile + kIndex, std::ios_base::app);
+        i++;
+        if (!kIndex.empty())
+            mongo.CreateIndexes(indexes);
+        mongo.AddMultipleObjects(objects);
+        timer.startTimer();
+        mongo.FindMany(filterInner);
+        timer.endTimer();
+        timer.displayResultOnStream(out);
+        mongo.ClearDatabase();
+    }
 
-    //////! Aggregate Benchmark
-    //    out << "\nMongo Aggregate\n";
-    //    i = 0;
-    //    mongo.AddMultipleObjectsScheme(objects);
-    //    auto valueMatch = make_document(kvp("job.salary", make_document(kvp("$lt", 1000))));
-    //    auto valueGroup = make_document(kvp("_id", make_document(kvp("birthdate", make_document(kvp("year", "$birthdate"))))),
-    //                                    kvp("avg_salary", make_document(kvp("$avg", "$job.salary"))));
-    //    while (i != 10) {
-    //        i++;
-    //        timer.startTimer();
-    //        mongo.Aggregate(valueMatch, valueGroup);
-    //        timer.endTimer();
-    //        timer.displayResultOnStream(out);
-    //    }
+    //! Aggregate Benchmark
+    i = 0;
+    auto valueMatch = make_document(kvp("job.salary", make_document(kvp("$lt", 1000))));
+    auto valueGroup = make_document(kvp("_id", make_document(kvp("birthdate", make_document(kvp("year", "$birthdate"))))),
+            kvp("avg_salary", make_document(kvp("$avg", "$job.salary"))));
+    while (i != 10) {
+        std::fstream out(std::string("MongoAggregate") + kCurrentFile + kIndex, std::ios_base::app);
+        i++;
+        if (!kIndex.empty())
+            mongo.CreateIndexes(indexes);
+        mongo.AddMultipleObjects(objects);
+        timer.startTimer();
+        mongo.Aggregate(valueMatch, valueGroup);
+        timer.endTimer();
+        timer.displayResultOnStream(out);
+        mongo.ClearDatabase();
+    }
 
-    //    //! Update Benchmark
-    //    const auto toUpdate = make_document(kvp("birthdate", make_document(kvp("$lt", "1970-01-01T00:00:00.000Z"))));
-    //    const auto setTo = make_document(kvp("$set", make_document(kvp("job.salary", "3000"))));
-    //    i = 0;
-    //    mongo.AddMultipleObjectsScheme(objects);
-    //
-    //    out << "\nMongo Update\n";
-    //    while (i != 1) {
-    //        i++;
-    //        //! update is problematic, it sigsegvs at the end, probably a mongocxx bug
-    //        //! we have to time it inside the function
-    //        mongo.UpdateMany(toUpdate, setTo);
-    //
-    //    }
+    //! Update Benchmark
+    const auto toUpdate = make_document(kvp("birthdate", make_document(kvp("$lt", "1970-01-01T00:00:00.000Z"))));
+    const auto setTo = make_document(kvp("$set", make_document(kvp("job.salary", "3000"))));
+    i = 0;
+    while (i != 10) {
+        std::fstream out(std::string("MongoUpdate") + kCurrentFile + kIndex, std::ios_base::app);
+        i++;
+        if (!kIndex.empty())
+            mongo.CreateIndexes(indexes);
+        timer.startTimer();
+        mongo.AddMultipleObjects(objects);
+        mongo.UpdateMany(toUpdate, setTo);
+        timer.endTimer();
+        timer.displayResultOnStream(out);
+        mongo.ClearDatabase();
+    }
 }
 
 int main()
 {
-    //MongoBenchmark();
-    PostgressBenchmark();
+    MongoBenchmark();
+    //PostgressBenchmark();
     return 0;
 }
