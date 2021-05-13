@@ -15,8 +15,7 @@ class PostgresqlDatabase
     std::string GetName();
 
     void RunQuery(const std::string &query);
-    void AddMultipleObjectsJsonb(const FileParser::jsonObjects &objects);
-    void AddMultipleObjectsJson(const FileParser::jsonObjects &objects);
+    void AddMultipleObjectsJson_b(const std::string &query);
     void AddMultipleObjectsScheme(const FileParser::jsonObjects &objects);
     void ClearDatabase();
 

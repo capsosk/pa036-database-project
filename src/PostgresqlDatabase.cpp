@@ -35,31 +35,10 @@ void PostgresqlDatabase::ClearDatabase()
     txn.commit();
 }
 
-void PostgresqlDatabase::AddMultipleObjectsJsonb(const std::vector<std::string> &objects)
+void PostgresqlDatabase::AddMultipleObjectsJson_b(const std::string &query)
 {
-    std::string begin = "INSERT INTO person_jsonb VALUES";
-    std::string core;
-    for (auto &item : objects) {
-        core.append("(\'" + item + "\'::jsonb),");
-    }
-    core.pop_back();
-    core.append(";");
     pqxx::work txn{ c };
-    txn.exec(begin + core);
-    txn.commit();
-}
-
-void PostgresqlDatabase::AddMultipleObjectsJson(const FileParser::jsonObjects &objects)
-{
-    std::string begin = "INSERT INTO person_json VALUES";
-    std::string core;
-    for (auto &item : objects) {
-        core.append("(\'" + item + "\'),");
-    }
-    core.pop_back();
-    core.append(";");
-    pqxx::work txn{ c };
-    txn.exec(begin + core);
+    txn.exec(query);
     txn.commit();
 }
 

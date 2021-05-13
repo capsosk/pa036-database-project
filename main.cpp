@@ -10,13 +10,6 @@
 #include "headers/PostgresqlDatabase.h"
 #include "PostgresQueries.h"
 
-enum class PostgresType
-{
-    JSON,
-    JSONB,
-    SCHEMA
-};
-
 enum class IndexType
 {
     INDEX,
@@ -27,8 +20,8 @@ enum class IndexType
 //! PostgreSQL benchmark setup
 //! we were using files with names "10000.json" and "1000000.json"
 constexpr auto kCurrentFileSize = "10000";
-constexpr IndexType indexType = IndexType::INDEX;
-constexpr PostgresType postgresType = PostgresType::SCHEMA;
+constexpr IndexType indexType = IndexType::INDEX_EXTRA;
+constexpr PostgresType postgresType = PostgresType::JSON;
 
 void runDBSetup(PostgresqlDatabase &postgresql)
 {
@@ -67,14 +60,14 @@ void runDBSetup(PostgresqlDatabase &postgresql)
     }
 }
 template <typename T>
-void addDBObjects(PostgresqlDatabase &postgresql, T objects)
+void addDBObjects(PostgresqlDatabase &postgresql, const T &objects)
 {
     switch (postgresType) {
     case PostgresType::JSON:
-        postgresql.AddMultipleObjectsJson(objects);
+        postgresql.AddMultipleObjectsJson_b(queryJson);
         break;
     case PostgresType::JSONB:
-        postgresql.AddMultipleObjectsJsonb(objects);
+        postgresql.AddMultipleObjectsJson_b(queryJsonb);
         break;
     case PostgresType::SCHEMA:
         postgresql.AddMultipleObjectsScheme(objects);
@@ -128,11 +121,26 @@ void PostgressBenchmark()
         objectsSchema.push_back(createInsertSchema(object));
     }
 
+    queryJson = createInsertJson(objects);
+    queryJsonb = createInsertJsonb(objects);
+
     auto postgresql = PostgresqlDatabase(pg_address);
     std::cout << postgresql.GetName() << " initialized" << '\n';
     postgresql.ClearDatabase();
 
     int i;
+
+    //! insert benchmark
+    std::cout << "\nInsert benchmark\n";
+    i = 0;
+    while (i != 10) {
+        std::fstream out(std::string("PostgresInsert") + getFileName(), std::ios_base::app);
+        i++;
+        runDBSetup(postgresql);
+        postgresType == PostgresType::SCHEMA ? addDBObjects(postgresql, objectsSchema) : addDBObjects(postgresql, objects);
+        timer.displayResultOnStream(out);
+        postgresql.ClearDatabase();
+    }
 
     //! Select inner benchmark
     std::cout << "\nInner benchmark\n";
@@ -183,20 +191,6 @@ void PostgressBenchmark()
         timer.displayResultOnStream(out);
     }
     postgresql.ClearDatabase();
-
-    //! insert benchmark
-    std::cout << "\nInsert benchmark\n";
-    i = 0;
-    while (i != 10) {
-        std::fstream out(std::string("PostgresInsert") + getFileName(), std::ios_base::app);
-        i++;
-        runDBSetup(postgresql);
-        timer.startTimer();
-        postgresType == PostgresType::SCHEMA ? addDBObjects(postgresql, objectsSchema) : addDBObjects(postgresql, objects);
-        timer.endTimer();
-        timer.displayResultOnStream(out);
-        postgresql.ClearDatabase();
-    }
 
     //! Update benchmark
     std::cout << "\nUpdate benchmark\n";
@@ -256,8 +250,8 @@ void MongoBenchmark()
     constexpr auto mongo_address = "mongodb://localhost:27017";
     auto mongo = MongoDatabase(mongo_address);
 
-    constexpr auto kCurrentFile = "1000000";
-    const std::string kIndex = "";
+    constexpr auto kCurrentFile = "10000";
+    const std::string kIndex;
     const std::string kFileName = std::string("../") + kCurrentFile + ".json";
 
     auto parser = FileParser(kFileName);
@@ -348,8 +342,8 @@ void MongoBenchmark()
         i++;
         if (!kIndex.empty())
             mongo.CreateIndexes(indexes);
-        timer.startTimer();
         mongo.AddMultipleObjects(objects);
+        timer.startTimer();
         mongo.UpdateMany(toUpdate, setTo);
         timer.endTimer();
         timer.displayResultOnStream(out);
@@ -359,7 +353,7 @@ void MongoBenchmark()
 
 int main()
 {
-    MongoBenchmark();
-    //PostgressBenchmark();
+    //    MongoBenchmark();
+    PostgressBenchmark();
     return 0;
 }

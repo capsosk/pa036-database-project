@@ -8,6 +8,17 @@
 
 constexpr auto pg_address = "postgresql://testuser:qwerty@localhost/testdb";
 
+enum class PostgresType
+{
+    JSON,
+    JSONB,
+    SCHEMA
+};
+
+//! inserts
+static std::string queryJson;
+static std::string queryJsonb;
+
 //! indexes
 const std::string index_basic_jsonb = R"(CREATE INDEX idx_person_jsonb_birthdate
                                     ON person_jsonb((data ->> 'birthdate'));)";
@@ -82,6 +93,30 @@ inline std::string createInsertSchema(const Person &person)
     retval << "}\')";
 
     return retval.str();
+}
+
+inline std::string createInsertJson(const std::vector<std::string> &objects)
+{
+    std::string begin = "INSERT INTO person_json VALUES";
+    std::string core;
+    for (auto &item : objects) {
+        core.append("(\'" + item + "\'),");
+    }
+    core.pop_back();
+    core.append(";");
+    return begin + core;
+}
+
+inline std::string createInsertJsonb(const std::vector<std::string> &objects)
+{
+    std::string begin = "INSERT INTO person_jsonb VALUES";
+    std::string core;
+    for (auto &item : objects) {
+        core.append("(\'" + item + "\'::jsonb),");
+    }
+    core.pop_back();
+    core.append(";");
+    return begin + core;
 }
 
 //! select outer
